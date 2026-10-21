@@ -195,3 +195,10 @@
 /processorParam:Version=3.8.5.1
 /build:Images/space_background.jpg
 
+#begin sounds/leberch-space-440026.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/processorParam:Version=3.8.5.1
+/build:sounds/leberch-space-440026.wav
+

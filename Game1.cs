@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
@@ -7,6 +8,11 @@ using System.Linq;
 
 namespace Topic2l2
 {
+    enum Screen
+    {
+        MainScreen,
+        playing
+    }
     public class Game1 : Game
     {
         private GraphicsDeviceManager _graphics;
@@ -22,11 +28,12 @@ namespace Topic2l2
         float planetRotationSpeed;
         Vector2 origin;
         MouseState mouseState, prevMouseState;
-       
+        int size;
         float seconds;
         float respawnTime;
-
-        float planetSpeed = 0.1f; // pixels per second
+        int y, x;
+        float planetSpeed; // pixels per second
+        SoundEffectInstance spaceTheme;
 
         public Game1()
         {
@@ -45,7 +52,8 @@ namespace Topic2l2
             planetRects = new List<Rectangle>();
             planetTextures = new List<Texture2D>();
            origin = new Vector2();
-            planetRotationSpeed = planetRotationSpeed;
+            planetRotationSpeed = planetSpeed + random.Next(1,7);
+
             _graphics.PreferredBackBufferWidth = window.Width;
             _graphics.PreferredBackBufferHeight = window.Height;
             _graphics.ApplyChanges();
@@ -57,9 +65,9 @@ namespace Topic2l2
             base.Initialize();
             for (int i = 0; i < 7; i++)
             {
-                int size = random.Next(25,75);
-                int x = random.Next(0, window.Width - size);
-                int y = random.Next(0, window.Height - size);
+                size = random.Next(25,75);
+                 x = random.Next(0, window.Width - size);
+                 y = random.Next(0, window.Height - size);
                 planetRects.Add(new Rectangle(x, y, size, size));
                 planetTextures.Add(textures[random.Next(textures.Count)]);
                 
@@ -86,12 +94,13 @@ namespace Topic2l2
 
         protected override void Update(GameTime gameTime)
         {
+           
             float dt = + (float)gameTime.ElapsedGameTime.TotalSeconds;
             seconds += (float)gameTime.ElapsedGameTime.TotalSeconds;
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
-            planetRotation += planetRotationSpeed * dt;
-            planetRotation %= MathHelper.TwoPi;
+            planetRotation += dt;
+            
             if (seconds >= respawnTime)
             {
                 int size = random.Next(25, 75);
@@ -155,7 +164,8 @@ namespace Topic2l2
 
             for (int i = 0; i < planetRects.Count; i++)
             {
-                _spriteBatch.Draw(planetTextures[i], planetRects[i], null, Color.White);
+                Rectangle tempRect = new Rectangle(planetRects[i].Center, planetRects[i].Size);
+                _spriteBatch.Draw(planetTextures[i], tempRect, null, Color.White, planetRotation / 2f, new Vector2(size, size), SpriteEffects.None, 1f);
             }
             _spriteBatch.End();
 
