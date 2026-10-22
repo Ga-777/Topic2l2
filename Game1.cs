@@ -32,6 +32,25 @@ namespace Topic2l2
 
 		Rectangle panelRect;
 
+        // AI 
+
+        List<string> planetNames = new List<string> { "Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune" };
+
+        List<int> planetPops = new List<int> { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0};
+
+        List<int> techLevel = new List<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+
+		List<string> planetResources = new List<string> { "Iron", "Copper", "Gold", "Platinum", "Uranium", "Titanium", "Silicon", "Water" };
+
+        List<string> planetTypes = new List<string> { "Terrestrial", "Gas Giant", "Ice Giant", "Dwarf Planet" };
+
+        List<string> planetHabitability = new List<string> { "Uninhabitable", "Marginally Habitable", "Habitable", "Highly Habitable" };
+
+        List<string> species = new List<string> { "Humans", "Aliens", "Robots", "Cyborgs", "Mutants", "Insects", "Reptiles", "Birds" };
+
+        
+
+
 		List<Rectangle> planetRects;
         List<Texture2D> textures;
         List<Texture2D> planetTextures;
@@ -83,7 +102,21 @@ namespace Topic2l2
                  y = random.Next(0, window.Height - size);
                 planetRects.Add(new Rectangle(x, y, size, size));
                 planetTextures.Add(textures[random.Next(textures.Count)]);
+                
+                planetHabitability[i] = planetHabitability[random.Next(planetHabitability.Count)];
+                planetResources[i] = planetResources[random.Next(planetResources.Count)];
+                if (planetHabitability[i] == "Uninhabitable")
+				{
+					techLevel[i] = 0;
+				}
+				else
+				{
+					techLevel[i] = techLevel[random.Next(techLevel.Count)];
+					species[i] = species[random.Next(species.Count)];
+					planetPops[i] = random.Next(2, 100);
+				}
 				
+
 			}
 
 
