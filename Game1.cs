@@ -18,10 +18,21 @@ namespace Topic2l2
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
-        Rectangle window;
+		Screen Screen = Screen.MainScreen;
+
+		Rectangle window;
         Random random = new Random();
         Texture2D spaceBackground;
-        List<Rectangle> planetRects;
+
+		// UI Elements
+
+		Texture2D UI_Panel;
+
+        bool panelVisible = false;
+
+		Rectangle panelRect;
+
+		List<Rectangle> planetRects;
         List<Texture2D> textures;
         List<Texture2D> planetTextures;
         float planetRotation;
@@ -54,7 +65,9 @@ namespace Topic2l2
            origin = new Vector2();
             planetRotationSpeed = planetSpeed + random.Next(1,7);
 
-            _graphics.PreferredBackBufferWidth = window.Width;
+			
+
+			_graphics.PreferredBackBufferWidth = window.Width;
             _graphics.PreferredBackBufferHeight = window.Height;
             _graphics.ApplyChanges();
 
@@ -70,8 +83,8 @@ namespace Topic2l2
                  y = random.Next(0, window.Height - size);
                 planetRects.Add(new Rectangle(x, y, size, size));
                 planetTextures.Add(textures[random.Next(textures.Count)]);
-                
-            }
+				
+			}
 
 
 
@@ -89,8 +102,10 @@ namespace Topic2l2
                 textures.Add(Content.Load<Texture2D>($"Images/16-bit-planet" + i));
 
             }
-            // TODO: use this.Content to load your game content here
-        }
+			UI_Panel = Content.Load<Texture2D>("UI/UI_Planel");
+			spaceTheme = Content.Load<SoundEffect>("Sounds/leberch-space-440026").CreateInstance();
+			// TODO: use this.Content to load your game content here
+		}
 
         protected override void Update(GameTime gameTime)
         {
@@ -99,7 +114,8 @@ namespace Topic2l2
             seconds += (float)gameTime.ElapsedGameTime.TotalSeconds;
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
-            planetRotation += dt;
+                KeyboardState keyboardState = Keyboard.GetState();
+			planetRotation += dt;
             
             if (seconds >= respawnTime)
             {
@@ -119,7 +135,14 @@ namespace Topic2l2
                     if (planetRects[i].Contains(mouseState.Position))
                     {
                         planetRects[i] = new Rectangle(mouseState.X - planetRects[i].Width / 2, mouseState.Y - planetRects[i].Height / 2, planetRects[i].Width, planetRects[i].Height);
-                        break;
+                        if (panelVisible == true)
+                        {
+							panelRect = new Rectangle(mouseState.X - panelRect.Width + 150, mouseState.Y - panelRect.Height + 50, 140, 120);
+
+
+						}
+
+						break;
                     }
                 }
             }
@@ -127,14 +150,16 @@ namespace Topic2l2
             {
                 for (int i = 0; i < planetRects.Count; i++)
                 {
-                    if (planetRects[i].Contains(mouseState.Position))
-                    {
-                        planetRects.RemoveAt(i);
-                        planetTextures.RemoveAt(i);
-                        i--;
-                        break;
-                    }
-                }
+                    
+					if (planetRects[i].Contains(mouseState.Position))
+					{
+						panelVisible = true;
+						panelRect = new Rectangle(planetRects[i].X + 50, planetRects[i].Y - 30, 140, 120);
+						break;
+					}
+
+
+				}
             }
 
 
@@ -147,11 +172,20 @@ namespace Topic2l2
                 }
             }
 
-           
-            
-                // TODO: Add your update logic here
 
-                base.Update(gameTime);
+            if (Screen == Screen.playing)
+            {
+                spaceTheme.Play();
+
+            }
+            else
+            {
+                spaceTheme.Stop();
+            }
+
+				// TODO: Add your update logic here
+
+				base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
@@ -159,14 +193,29 @@ namespace Topic2l2
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             _spriteBatch.Begin();
+            if (Screen == Screen.MainScreen)
+			{
+				
+				if (Keyboard.GetState().IsKeyDown(Keys.Enter))
+				{
+					Screen = Screen.playing;
+				}
+			}
+			else if (Screen == Screen.playing)
+			{
+				_spriteBatch.Draw(spaceBackground, window, Color.White);
 
-            _spriteBatch.Draw(spaceBackground, window, Color.White);
+				for (int i = 0; i < planetRects.Count; i++)
+				{
+					Rectangle tempRect = new Rectangle(planetRects[i].Center, planetRects[i].Size);
+					_spriteBatch.Draw(planetTextures[i], tempRect, null, Color.White, planetRotation / 2f, new Vector2(size, size), SpriteEffects.None, 1f);
+				}
+                
+					_spriteBatch.Draw(UI_Panel, panelRect, Color.White);
+				
 
-            for (int i = 0; i < planetRects.Count; i++)
-            {
-                Rectangle tempRect = new Rectangle(planetRects[i].Center, planetRects[i].Size);
-                _spriteBatch.Draw(planetTextures[i], tempRect, null, Color.White, planetRotation / 2f, new Vector2(size, size), SpriteEffects.None, 1f);
-            }
+			}
+			
             _spriteBatch.End();
 
             // TODO: Add your drawing code here
