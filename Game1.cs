@@ -1,259 +1,251 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using Topic2l2;
 
-namespace Topic2l2
+namespace SpaceGame
 {
-    enum Screen
-    {
-        MainScreen,
-        playing
-    }
-    public class Game1 : Game
-    {
-        private GraphicsDeviceManager _graphics;
-        private SpriteBatch _spriteBatch;
+	enum Screen
+	{
+		MainScreen,
+		Playing
+	}
 
-		Screen Screen = Screen.MainScreen;
+	public class Game1 : Game
+	{
+		private GraphicsDeviceManager _graphics;
+		private SpriteBatch _spriteBatch;
+
+		Screen currentScreen = Screen.MainScreen;
 
 		Rectangle window;
-        Random random = new Random();
-        Texture2D spaceBackground;
+		Random random;
+		Texture2D spaceBackground;
 
 		// UI Elements
-
 		Texture2D UI_Panel;
-
-        bool panelVisible = false;
-
+		bool panelVisible = false;
 		Rectangle panelRect;
+		Planet selectedPlanet = null; // Track which planet was clicked
 
-        // AI 
+		// Master pool of data for randomization
+		List<string> possibleNames = new List<string> { "Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Kepler-22b", "Gliss-581" };
+		List<string> possibleMinerals = new List<string> { "Iron", "Copper", "Gold", "Platinum", "Uranium", "Titanium", "Silicon", "Water" };
+		List<string> possibleTypes = new List<string> { "Terrestrial", "Gas Giant", "Ice Giant", "Dwarf Planet" };
+		List<string> possibleSpecies = new List<string> { "Humans", "Aliens", "Robots", "Cyborgs", "Mutants", "Insects", "Reptiles", "Birds" };
 
-        List<string> planetNames = new List<string> { "Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune" };
+		// Active planets in the game world
+		List<Planet> planets;
+		List<Texture2D> planetTextures;
 
-        List<int> planetPops = new List<int> { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0};
+		MouseState mouseState, prevMouseState;
+		float seconds;
+		float respawnTime;
 
-        List<int> techLevel = new List<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+		SoundEffect spaceThemeEffect;
+		SoundEffectInstance spaceTheme;
 
-		List<string> planetResources = new List<string> { "Iron", "Copper", "Gold", "Platinum", "Uranium", "Titanium", "Silicon", "Water" };
-
-        List<string> planetTypes = new List<string> { "Terrestrial", "Gas Giant", "Ice Giant", "Dwarf Planet" };
-
-        List<string> planetHabitability = new List<string> { "Uninhabitable", "Marginally Habitable", "Habitable", "Highly Habitable" };
-
-        List<string> species = new List<string> { "Humans", "Aliens", "Robots", "Cyborgs", "Mutants", "Insects", "Reptiles", "Birds" };
-
-        
-
-
-		List<Rectangle> planetRects;
-        List<Texture2D> textures;
-        List<Texture2D> planetTextures;
-        float planetRotation;
-        float planetRotationSpeed;
-        Vector2 origin;
-        MouseState mouseState, prevMouseState;
-        int size;
-        float seconds;
-        float respawnTime;
-        int y, x;
-        float planetSpeed; // pixels per second
-        SoundEffectInstance spaceTheme;
-
-        public Game1()
-        {
-            _graphics = new GraphicsDeviceManager(this);
-            Content.RootDirectory = "Content";
-            IsMouseVisible = true;
-            
-        }
-
-        protected override void Initialize()
-        {
-            // TODO: Add your initialization logic here
-            window = new Rectangle(0,0, 800, 600);
-            random = new Random();
-            textures = new List<Texture2D>();
-            planetRects = new List<Rectangle>();
-            planetTextures = new List<Texture2D>();
-           origin = new Vector2();
-            planetRotationSpeed = planetSpeed + random.Next(1,7);
-
-			
-
-			_graphics.PreferredBackBufferWidth = window.Width;
-            _graphics.PreferredBackBufferHeight = window.Height;
-            _graphics.ApplyChanges();
-
-            seconds = 0f;
-            respawnTime = 3f;
-
-
-            base.Initialize();
-            for (int i = 0; i < 7; i++)
-            {
-                size = random.Next(25,75);
-                 x = random.Next(0, window.Width - size);
-                 y = random.Next(0, window.Height - size);
-                planetRects.Add(new Rectangle(x, y, size, size));
-                planetTextures.Add(textures[random.Next(textures.Count)]);
-                
-                planetHabitability[i] = planetHabitability[random.Next(planetHabitability.Count)];
-                planetResources[i] = planetResources[random.Next(planetResources.Count)];
-                if (planetHabitability[i] == "Uninhabitable")
-				{
-					techLevel[i] = 0;
-				}
-				else
-				{
-					techLevel[i] = techLevel[random.Next(techLevel.Count)];
-					species[i] = species[random.Next(species.Count)];
-					planetPops[i] = random.Next(2, 100);
-				}
-				
-
-			}
-
-
-
-
-
-            
-        }
-
-        protected override void LoadContent()
-        {
-            _spriteBatch = new SpriteBatch(GraphicsDevice);
-            spaceBackground = Content.Load<Texture2D>("Images/space_background");
-            for (int i = 1; i <= 13; i++)
-            {
-                textures.Add(Content.Load<Texture2D>($"Images/16-bit-planet" + i));
-
-            }
-			UI_Panel = Content.Load<Texture2D>("UI/UI_Planel");
-			spaceTheme = Content.Load<SoundEffect>("Sounds/leberch-space-440026").CreateInstance();
-			// TODO: use this.Content to load your game content here
+		public Game1()
+		{
+			_graphics = new GraphicsDeviceManager(this);
+			Content.RootDirectory = "Content";
+			IsMouseVisible = true;
 		}
 
-        protected override void Update(GameTime gameTime)
-        {
-           
-            float dt = + (float)gameTime.ElapsedGameTime.TotalSeconds;
-            seconds += (float)gameTime.ElapsedGameTime.TotalSeconds;
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-                Exit();
-                KeyboardState keyboardState = Keyboard.GetState();
-			planetRotation += dt;
-            
-            if (seconds >= respawnTime)
-            {
-                int size = random.Next(25, 75);
-                int x = random.Next(0, window.Width - size);
-                int y = random.Next(0, window.Height - size);
-                planetRects.Add(new Rectangle(x, y, size, size));
-                planetTextures.Add(textures[random.Next(textures.Count)]);
-                seconds = 0f;
-            }
-            prevMouseState = mouseState;
-            mouseState = Mouse.GetState();
-            if (mouseState.LeftButton == ButtonState.Pressed )
-            {
-                for (int i = 0; i < planetRects.Count; i++)
-                {
-                    if (planetRects[i].Contains(mouseState.Position))
-                    {
-                        planetRects[i] = new Rectangle(mouseState.X - planetRects[i].Width / 2, mouseState.Y - planetRects[i].Height / 2, planetRects[i].Width, planetRects[i].Height);
-                        if (panelVisible == true)
-                        {
-							panelRect = new Rectangle(mouseState.X - panelRect.Width + 150, mouseState.Y - panelRect.Height + 50, 140, 120);
+		protected override void Initialize()
+		{
+			window = new Rectangle(0, 0, 800, 600);
+			random = new Random();
+			planets = new List<Planet>();
+			planetTextures = new List<Texture2D>();
 
+			_graphics.PreferredBackBufferWidth = window.Width;
+			_graphics.PreferredBackBufferHeight = window.Height;
+			_graphics.ApplyChanges();
 
-						}
+			seconds = 0f;
+			respawnTime = 3f;
 
-						break;
-                    }
-                }
-            }
-            else if (mouseState.RightButton == ButtonState.Pressed && prevMouseState.RightButton == ButtonState.Released)
-            {
-                for (int i = 0; i < planetRects.Count; i++)
-                {
-                    
-					if (planetRects[i].Contains(mouseState.Position))
-					{
-						panelVisible = true;
-						panelRect = new Rectangle(planetRects[i].X + 50, planetRects[i].Y - 30, 140, 120);
-						break;
-					}
+			base.Initialize();
+		}
 
+		protected override void LoadContent()
+		{
+			_spriteBatch = new SpriteBatch(GraphicsDevice);
+			spaceBackground = Content.Load<Texture2D>("Images/space_background");
 
-				}
-            }
-
-
-            if (planetRects.Count > 0)
-            {
-                for (int i = 0; i < planetRects.Count; i++)
-                {
-                    planetSpeed = ++planetSpeed;
-
-                }
-            }
-
-
-            if (Screen == Screen.playing)
-            {
-                spaceTheme.Play();
-
-            }
-            else
-            {
-                spaceTheme.Stop();
-            }
-
-				// TODO: Add your update logic here
-
-				base.Update(gameTime);
-        }
-
-        protected override void Draw(GameTime gameTime)
-        {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
-
-            _spriteBatch.Begin();
-            if (Screen == Screen.MainScreen)
+			// Load planet textures
+			for (int i = 1; i <= 13; i++)
 			{
-				
-				if (Keyboard.GetState().IsKeyDown(Keys.Enter))
+				planetTextures.Add(Content.Load<Texture2D>($"Images/16-bit-planet{i}"));
+			}
+
+			UI_Panel = Content.Load<Texture2D>("UI/UI_Planel");
+
+			spaceThemeEffect = Content.Load<SoundEffect>("Sounds/leberch-space-440026");
+			spaceTheme = spaceThemeEffect.CreateInstance();
+
+			// Spawn initial unique planets
+			SpawnPlanets(7);
+		}
+
+		private void SpawnPlanets(int count)
+		{
+			for (int i = 0; i < count; i++)
+			{
+				int size = random.Next(25, 75);
+				int x = random.Next(0, window.Width - size);
+				int y = random.Next(0, window.Height - size);
+
+				bool isHabitable = random.Next(0, 2) == 1; // 50% chance to be habitable
+
+				Planet newPlanet = new Planet
 				{
-					Screen = Screen.playing;
+					Name = possibleNames[random.Next(possibleNames.Count)],
+					Type = possibleTypes[random.Next(possibleTypes.Count)],
+					Mineral = possibleMinerals[random.Next(possibleMinerals.Count)],
+					IsHabitable = isHabitable,
+					Species = isHabitable ? possibleSpecies[random.Next(possibleSpecies.Count)] : "None (Barren)",
+					Population = isHabitable ? random.Next(100, 500000) : 0,
+					TechLevel = isHabitable ? random.Next(1, 10) : 0,
+					Bounds = new Rectangle(x, y, size, size),
+					Texture = planetTextures[random.Next(planetTextures.Count)],
+					Rotation = 0f,
+					RotationSpeed = (float)random.NextDouble() * 1.5f + 0.5f
+				};
+
+				planets.Add(newPlanet);
+			}
+		}
+
+		protected override void Update(GameTime gameTime)
+		{
+			float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+			seconds += dt;
+
+			KeyboardState keyboardState = Keyboard.GetState();
+
+			if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || keyboardState.IsKeyDown(Keys.Escape))
+				Exit();
+
+			// Screen Switching Logic
+			if (currentScreen == Screen.MainScreen)
+			{
+				if (keyboardState.IsKeyDown(Keys.Enter))
+				{
+					currentScreen = Screen.Playing;
 				}
 			}
-			else if (Screen == Screen.playing)
+			else if (currentScreen == Screen.Playing)
+			{
+				// Update planet rotations
+				foreach (var planet in planets)
+				{
+					planet.Rotation += dt * planet.RotationSpeed;
+				}
+
+				// Handle Spacebar spawning new planets
+				if (keyboardState.IsKeyDown(Keys.Space) && seconds >= respawnTime)
+				{
+					SpawnPlanets(1);
+					seconds = 0f;
+				}
+
+				// Mouse Dragging & UI Interaction
+				prevMouseState = mouseState;
+				mouseState = Mouse.GetState();
+
+				if (mouseState.LeftButton == ButtonState.Pressed)
+				{
+					for (int i = 0; i < planets.Count; i++)
+					{
+						if (planets[i].Bounds.Contains(mouseState.X, mouseState.Y))
+						{
+							// Move planet with mouse drag
+							planets[i].Bounds = new Rectangle(mouseState.X - planets[i].Bounds.Width / 2, mouseState.Y - planets[i].Bounds.Height / 2,planets[i].Bounds.Width,planets[i].Bounds.Height );
+
+							if (panelVisible && selectedPlanet == planets[i])
+							{
+								panelRect = new Rectangle(mouseState.X - panelRect.Width + 150, mouseState.Y - panelRect.Height + 50, 160, 140);
+							}
+							break;
+						}
+					}
+				}
+				else if (mouseState.RightButton == ButtonState.Pressed && prevMouseState.RightButton == ButtonState.Released)
+				{
+					for (int i = 0; i < planets.Count; i++)
+					{
+						if (planets[i].Bounds.Contains(mouseState.X, mouseState.Y))
+						{
+							panelVisible = true;
+							selectedPlanet = planets[i]; // Lock onto this specific planet's data!
+							panelRect = new Rectangle(planets[i].Bounds.X + 50, planets[i].Bounds.Y - 30, 160, 140);
+							break;
+						}
+					}
+				}
+
+				// Manage Audio state
+				if (spaceTheme.State != SoundState.Playing)
+				{
+					spaceTheme.Play();
+				}
+			}
+
+			base.Update(gameTime);
+		}
+
+		protected override void Draw(GameTime gameTime)
+		{
+			GraphicsDevice.Clear(Color.CornflowerBlue);
+
+			_spriteBatch.Begin();
+
+			if (currentScreen == Screen.MainScreen)
+			{
+				// Draw title screen instructions here if desired
+			}
+			else if (currentScreen == Screen.Playing)
 			{
 				_spriteBatch.Draw(spaceBackground, window, Color.White);
 
-				for (int i = 0; i < planetRects.Count; i++)
+				// Draw each unique planet
+				foreach (var planet in planets)
 				{
-					Rectangle tempRect = new Rectangle(planetRects[i].Center, planetRects[i].Size);
-					_spriteBatch.Draw(planetTextures[i], tempRect, null, Color.White, planetRotation / 2f, new Vector2(size, size), SpriteEffects.None, 1f);
+					Vector2 originCenter = new Vector2(planet.Texture.Width / 2f, planet.Texture.Height / 2f);
+					Vector2 drawPosition = new Vector2(planet.Bounds.X + planet.Bounds.Width / 2f, planet.Bounds.Y + planet.Bounds.Height / 2f);
+					float scale = (float)planet.Bounds.Width / planet.Texture.Width;
+
+					_spriteBatch.Draw(
+						planet.Texture,
+						drawPosition,
+						null,
+						Color.White,
+						planet.Rotation / 2f,
+						originCenter,
+						scale,
+						SpriteEffects.None,
+						1f
+					);
 				}
-                
+
+				// Draw UI Panel and the unique planet's info if selected
+				if (panelVisible && selectedPlanet != null)
+				{
 					_spriteBatch.Draw(UI_Panel, panelRect, Color.White);
-				
 
+					// Note: To draw text strings like selectedPlanet.Name or selectedPlanet.Mineral, 
+					// make sure you have a SpriteFont loaded and call _spriteBatch.DrawString() here!
+				}
 			}
-			
-            _spriteBatch.End();
 
-            // TODO: Add your drawing code here
+			_spriteBatch.End();
 
-            base.Draw(gameTime);
-        }
-    }
+			base.Draw(gameTime);
+		}
+	}
 }
