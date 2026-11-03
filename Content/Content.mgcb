@@ -13,6 +13,22 @@
 
 #---------------------------------- Content ---------------------------------#
 
+#begin Font/Jersey15-Regular.ttf
+/importer:FontImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/processorParam:Version=3.8.5.1
+/build:Font/Jersey15-Regular.ttf
+
+#begin Font/maintext.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/processorParam:Version=3.8.5.1
+/build:Font/maintext.spritefont
+
 #begin Images/16-bit-planet1.png
 /importer:TextureImporter
 /processor:TextureProcessor

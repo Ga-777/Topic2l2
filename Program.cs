@@ -1,2 +1,2 @@
-﻿using var game = new Topic2l2.Game1();
+﻿using var game = new spaceGame.Game1();
 game.Run();

@@ -4,9 +4,9 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Topic2l2;
+using spacePlanets;
 
-namespace SpaceGame
+namespace spaceGame
 {
 	enum Screen
 	{
@@ -24,12 +24,17 @@ namespace SpaceGame
 		Rectangle window;
 		Random random;
 		Texture2D spaceBackground;
+		// MainScreen Elements
+
+		Rectangle mainBackgroundRect;
 
 		// UI Elements
 		Texture2D UI_Panel;
 		bool panelVisible = false;
 		Rectangle panelRect;
 		Planet selectedPlanet = null; // Track which planet was clicked
+
+		SpriteFont font;
 
 		// Master pool of data for randomization
 		List<string> possibleNames = new List<string> { "Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Kepler-22b", "Gliss-581" };
@@ -59,6 +64,7 @@ namespace SpaceGame
 		{
 			window = new Rectangle(0, 0, 800, 600);
 			random = new Random();
+			mainBackgroundRect = new Rectangle(0, 0, window.Width, window.Height);
 			planets = new List<Planet>();
 			planetTextures = new List<Texture2D>();
 
@@ -87,6 +93,9 @@ namespace SpaceGame
 
 			spaceThemeEffect = Content.Load<SoundEffect>("Sounds/leberch-space-440026");
 			spaceTheme = spaceThemeEffect.CreateInstance();
+
+			// font
+			font = Content.Load<SpriteFont>("Font/maintext");
 
 			// Spawn initial unique planets
 			SpawnPlanets(7);
@@ -134,6 +143,7 @@ namespace SpaceGame
 			// Screen Switching Logic
 			if (currentScreen == Screen.MainScreen)
 			{
+			    
 				if (keyboardState.IsKeyDown(Keys.Enter))
 				{
 					currentScreen = Screen.Playing;
@@ -201,13 +211,14 @@ namespace SpaceGame
 
 		protected override void Draw(GameTime gameTime)
 		{
-			GraphicsDevice.Clear(Color.CornflowerBlue);
+			GraphicsDevice.Clear(Color.Black);
 
 			_spriteBatch.Begin();
 
 			if (currentScreen == Screen.MainScreen)
 			{
 				// Draw title screen instructions here if desired
+				_spriteBatch.Draw(spaceBackground, mainBackgroundRect, Color.White);
 			}
 			else if (currentScreen == Screen.Playing)
 			{
@@ -231,7 +242,10 @@ namespace SpaceGame
 						SpriteEffects.None,
 						1f
 					);
+
 				}
+
+
 
 				// Draw UI Panel and the unique planet's info if selected
 				if (panelVisible && selectedPlanet != null)
@@ -240,6 +254,11 @@ namespace SpaceGame
 
 					// Note: To draw text strings like selectedPlanet.Name or selectedPlanet.Mineral, 
 					// make sure you have a SpriteFont loaded and call _spriteBatch.DrawString() here!
+					_spriteBatch.DrawString(font, selectedPlanet.Name, new Vector2(panelRect.X + 10, panelRect.Y + 10), Color.White);
+					_spriteBatch.DrawString(font, "Type: " + selectedPlanet.Type, new Vector2(panelRect.X + 10, panelRect.Y + 30), Color.White);
+					_spriteBatch.DrawString(font, "Mineral: " + selectedPlanet.Mineral, new Vector2(panelRect.X + 10, panelRect.Y + 50), Color.White);
+					_spriteBatch.DrawString(font, "Species: " + selectedPlanet.Species, new Vector2(panelRect.X + 10, panelRect.Y + 70), Color.White);
+					_spriteBatch.DrawString(font, "Population: " + selectedPlanet.Population.ToString(), new Vector2(panelRect.X + 10, panelRect.Y + 90), Color.White);
 				}
 			}
 

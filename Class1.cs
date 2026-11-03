@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Topic2l2
+namespace spacePlanets
 {
 	public class Planet
 	{
@@ -22,5 +22,35 @@ namespace Topic2l2
 		public Texture2D Texture { get; set; }
 		public float Rotation { get; set; }
 		public float RotationSpeed { get; set; }
+
+		public string planetName()
+		{
+			Name = "Planet " + Guid.NewGuid().ToString().Substring(0, 8);
+			return Name;
+		}
+		public string planetType()
+		{
+			string[] types = { "Terrestrial", "Gas Giant", "Ice Giant", "Dwarf Planet" };
+			Type = types[new Random().Next(types.Length)];
+			return Type;
+		}
+		public string planetMineral()
+		{
+			string[] minerals = { "Iron", "Copper", "Gold", "Platinum", "Uranium", "Titanium", "Silicon", "Water" };
+			Mineral = minerals[new Random().Next(minerals.Length)];
+			return Mineral;
+		}
+		public string planetSpecies()
+		{
+			string[] species = { "Humans", "Aliens", "Robots", "Cyborgs", "Mutants", "Insects", "Reptiles", "Birds" };
+			Species = species[new Random().Next(species.Length)];
+			return Species;
+		}
+		public int planetPopulation()
+		{
+			Population = new Random().Next(1000, 1000000);
+			return Population;
+		}
+
 	}
 }
