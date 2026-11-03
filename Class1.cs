@@ -10,59 +10,36 @@ namespace spacePlanets
 {
 	public class Planet
 	{
-		public string Name { get; set; }
-		public string Type { get; set; }
-		public string Mineral { get; set; }
-		public string Species { get; set; }
-		public int Population { get; set; }
-		public int TechLevel { get; set; }
-		public bool IsHabitable { get; set; }
+		Random random = new Random();
 
-		public string age { get; set; }
-		public Rectangle Bounds { get; set; }
-		public Texture2D Texture { get; set; }
-		public float Rotation { get; set; }
-		public float RotationSpeed { get; set; }
+		private Texture2D _texture;
+        private Rectangle _location;
+		private string _name;
+		private SpriteFont _font;
+		private float _rotateion;
 
-		public string planetName()
-		{
-			Name = "Planet " + Guid.NewGuid().ToString().Substring(0, 8);
-			return Name;
-		}
-		public string planetType()
-		{
-			string[] types = { "Terrestrial", "Gas Giant", "Ice Giant", "Dwarf Planet" };
-			Type = types[new Random().Next(types.Length)];
-			return Type;
-		}
-		public string planetMineral()
-		{
-			string[] minerals = { "Iron", "Copper", "Gold", "Platinum", "Uranium", "Titanium", "Silicon", "Water" };
-			Mineral = minerals[new Random().Next(minerals.Length)];
-			return Mineral;
-		}
-		public string planetSpecies()
-		{
-			string[] species = { "Humans", "Aliens", "Robots", "Cyborgs", "Mutants", "Insects", "Reptiles", "Birds" };
-			Species = species[new Random().Next(species.Length)];
-			return Species;
-		}
-		public int planetPopulation()
-		{
-			Population = new Random().Next(1000, 1000000);
-			return Population;
-		}
-		public int planetTechLevel()
-		{
-			TechLevel = new Random().Next(1, 10);
-			return TechLevel;
-		}
-		public string planetAge()
-		{
-			string[] ageDescriptions = { "The Stone Age", "The Bronze Age", "The Iron Age", "The Middle Ages", "The Renaissance", "The Industrial Revolution", "The Modern Era", "The Information Age", "The Space Age" };
-			age = ageDescriptions[new Random().Next(ageDescriptions.Length)];
-			return age;
-		}
 
-	}
+
+        public Planet(Texture2D texture, Rectangle bounds, SpriteFont font, string name)
+		{
+			_texture = texture;
+			_location = bounds;
+			_name = name;
+			_font = font;
+        }
+		public void Update(GameTime gameTime)
+		{
+			_rotateion += (float)gameTime.ElapsedGameTime.TotalSeconds;
+        }
+
+
+        public void Draw(SpriteBatch spriteBatch)
+		{
+			spriteBatch.Draw(_texture, _location,null, Color.White, _rotateion, new Vector2(0,0), SpriteEffects.None, _rotateion);
+			Vector2 nameSize = _font.MeasureString(_name);
+			Vector2 namePosition = new Vector2(_location.X + (_location.Width - nameSize.X) / 2, _location.Y + _location.Height + 5);
+			spriteBatch.DrawString(_font, _name, namePosition, Color.White);
+        }
+
+    }
 }

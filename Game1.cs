@@ -126,23 +126,10 @@ namespace spaceGame
 
 				bool isHabitable = random.Next(0, 2) == 1; // 50% chance to be habitable
 
-				Planet newPlanet = new Planet
-				{
-					Name = possibleNames[random.Next(possibleNames.Count)],
-					Type = possibleTypes[random.Next(possibleTypes.Count)],
-					Mineral = possibleMinerals[random.Next(possibleMinerals.Count)],
-					IsHabitable = isHabitable,
-					Species = isHabitable ? possibleSpecies[random.Next(possibleSpecies.Count)] : "None (Barren)",
-					Population = isHabitable ? random.Next(100, 500000) : 0,
-					TechLevel = isHabitable ? random.Next(1, 10) : 0,
-					Bounds = new Rectangle(x, y, size, size),
-					Texture = planetTextures[random.Next(planetTextures.Count)],
-					Rotation = 0f,
-					RotationSpeed = (float)random.NextDouble() * 1.5f + 0.5f,
-					age = isHabitable ? new Planet().planetAge() : "N/A"
-				};
-
-				planets.Add(newPlanet);
+				
+				
+					
+				planets.Add(new Planet(planetTextures[random.Next(planetTextures.Count)], new Rectangle(x, y, size, size), font, possibleNames[random.Next(possibleNames.Count)]));
 			}
 		}
 
@@ -152,6 +139,7 @@ namespace spaceGame
 			seconds += dt;
 			//currentScreen = Screen.intro; // Ensure currentScreen is initialized
 			
+
 			KeyboardState keyboardState = Keyboard.GetState();
 
 			if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || keyboardState.IsKeyDown(Keys.Escape))
@@ -169,11 +157,7 @@ namespace spaceGame
 			else if (currentScreen == Screen.Playing)
 			{
 				// Update planet rotations
-				foreach (var planet in planets)
-				{
-					planet.Rotation += dt * planet.RotationSpeed;
-				}
-
+				
 				// Handle Spacebar spawning new planets
 				if (keyboardState.IsKeyDown(Keys.Space) && seconds >= respawnTime)
 				{
@@ -182,39 +166,7 @@ namespace spaceGame
 				}
 
 				// Mouse Dragging & UI Interaction
-				prevMouseState = mouseState;
-				mouseState = Mouse.GetState();
-
-				if (mouseState.LeftButton == ButtonState.Pressed)
-				{
-					for (int i = 0; i < planets.Count; i++)
-					{
-						if (planets[i].Bounds.Contains(mouseState.X, mouseState.Y))
-						{
-							// Move planet with mouse drag
-							planets[i].Bounds = new Rectangle(mouseState.X - planets[i].Bounds.Width / 2, mouseState.Y - planets[i].Bounds.Height / 2,planets[i].Bounds.Width,planets[i].Bounds.Height );
-
-							if (panelVisible && selectedPlanet == planets[i])
-							{
-								panelRect = new Rectangle(mouseState.X - panelRect.Width + 350, mouseState.Y - panelRect.Height + 50, 420, 150);
-							}
-							break;
-						}
-					}
-				}
-				else if (mouseState.RightButton == ButtonState.Pressed && prevMouseState.RightButton == ButtonState.Released)
-				{
-					for (int i = 0; i < planets.Count; i++)
-					{
-						if (planets[i].Bounds.Contains(mouseState.X, mouseState.Y))
-						{
-							panelVisible = true;
-							selectedPlanet = planets[i]; // Lock onto this specific planet's data!
-							panelRect = new Rectangle(planets[i].Bounds.X , planets[i].Bounds.Y - 70, 420, 150);
-							break;
-						}
-					}
-				}
+				
 
 				// Manage Audio state
 				if (spaceTheme.State != SoundState.Playing)
@@ -244,52 +196,14 @@ namespace spaceGame
 				_spriteBatch.Draw(spaceBackground, window, Color.White);
 
 				// Draw each unique planet
-				foreach (var planet in planets)
+				foreach (Planet planet in planets)
 				{
-					Vector2 originCenter = new Vector2(planet.Texture.Width / 2f, planet.Texture.Height / 2f);
-					Vector2 drawPosition = new Vector2(planet.Bounds.X + planet.Bounds.Width / 2f, planet.Bounds.Y + planet.Bounds.Height / 2f);
-					float scale = (float)planet.Bounds.Width / planet.Texture.Width;
-
-					_spriteBatch.Draw(
-						planet.Texture,
-						drawPosition,
-						null,
-						Color.White,
-						planet.Rotation / 2f,
-						originCenter,
-						scale,
-						SpriteEffects.None,
-						1f
-					);
-
+					planet.Draw(_spriteBatch);
 				}
 
 
 
-				// Draw UI Panel and the unique planet's info if selected
-				if (panelVisible && selectedPlanet != null)
-				{
-					_spriteBatch.Draw(UI_Panel, panelRect, Color.White);
-
-					// Note: To draw text strings like selectedPlanet.Name or selectedPlanet.Mineral, 
-					// make sure you have a SpriteFont loaded and call _spriteBatch.DrawString() here!
-					_spriteBatch.DrawString(font, selectedPlanet.Name, new Vector2(panelRect.X + 140, panelRect.Y + 20), Color.White);
-					_spriteBatch.DrawString(font, "Type: " + selectedPlanet.Type, new Vector2(panelRect.X + 140, panelRect.Y + 50), Color.White);
-					_spriteBatch.DrawString(font, "Mineral: " + selectedPlanet.Mineral, new Vector2(panelRect.X + 140, panelRect.Y + 70), Color.White);
-					_spriteBatch.DrawString(font, "Species: " + selectedPlanet.Species, new Vector2(panelRect.X + 140, panelRect.Y + 90), Color.White);
-					_spriteBatch.DrawString(font, "Population: " + selectedPlanet.Population.ToString(), new Vector2(panelRect.X + 140, panelRect.Y + 110), Color.White);
-					if (selectedPlanet.IsHabitable)
-					{
-						_spriteBatch.DrawString(font, "Tech Level: " + selectedPlanet.TechLevel.ToString(), new Vector2(panelRect.X + 140, panelRect.Y + 150), Color.White);
-						
-						_spriteBatch.DrawString(font, "Age: " + selectedPlanet.age, new Vector2(panelRect.X + 140, panelRect.Y + 130), Color.White);
-					}
-					else
-					{
-						_spriteBatch.DrawString(font, "Tech Level: N/A", new Vector2(panelRect.X + 140, panelRect.Y + 150), Color.White);
-					}
-					
-				}
+				
 			}
 
 			_spriteBatch.End();
