@@ -18,6 +18,7 @@ namespace spacePlanets
 		public int TechLevel { get; set; }
 		public bool IsHabitable { get; set; }
 
+		public string age { get; set; }
 		public Rectangle Bounds { get; set; }
 		public Texture2D Texture { get; set; }
 		public float Rotation { get; set; }
@@ -50,6 +51,17 @@ namespace spacePlanets
 		{
 			Population = new Random().Next(1000, 1000000);
 			return Population;
+		}
+		public int planetTechLevel()
+		{
+			TechLevel = new Random().Next(1, 10);
+			return TechLevel;
+		}
+		public string planetAge()
+		{
+			string[] ageDescriptions = { "The Stone Age", "The Bronze Age", "The Iron Age", "The Middle Ages", "The Renaissance", "The Industrial Revolution", "The Modern Era", "The Information Age", "The Space Age" };
+			age = ageDescriptions[new Random().Next(ageDescriptions.Length)];
+			return age;
 		}
 
 	}

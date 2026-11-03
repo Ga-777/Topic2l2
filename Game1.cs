@@ -10,6 +10,7 @@ namespace spaceGame
 {
 	enum Screen
 	{
+	   
 		MainScreen,
 		Playing
 	}
@@ -24,9 +25,20 @@ namespace spaceGame
 		Rectangle window;
 		Random random;
 		Texture2D spaceBackground;
+		
+
+
+		Rectangle introBackgroundRect;
+
+		float introTimer = 0f;
+
 		// MainScreen Elements
 
 		Rectangle mainBackgroundRect;
+
+		Texture2D logo;
+
+		Rectangle logoRect;
 
 		// UI Elements
 		Texture2D UI_Panel;
@@ -65,6 +77,8 @@ namespace spaceGame
 			window = new Rectangle(0, 0, 800, 600);
 			random = new Random();
 			mainBackgroundRect = new Rectangle(0, 0, window.Width, window.Height);
+			introBackgroundRect = new Rectangle(0, 0, window.Width, window.Height);
+			logoRect = new Rectangle(window.Width / 2 - 250, window.Height / 2 - 400, 500, 500);
 			planets = new List<Planet>();
 			planetTextures = new List<Texture2D>();
 
@@ -89,6 +103,7 @@ namespace spaceGame
 				planetTextures.Add(Content.Load<Texture2D>($"Images/16-bit-planet{i}"));
 			}
 
+			logo = Content.Load<Texture2D>("UI/logo");
 			UI_Panel = Content.Load<Texture2D>("UI/UI_Planel");
 
 			spaceThemeEffect = Content.Load<SoundEffect>("Sounds/leberch-space-440026");
@@ -123,7 +138,8 @@ namespace spaceGame
 					Bounds = new Rectangle(x, y, size, size),
 					Texture = planetTextures[random.Next(planetTextures.Count)],
 					Rotation = 0f,
-					RotationSpeed = (float)random.NextDouble() * 1.5f + 0.5f
+					RotationSpeed = (float)random.NextDouble() * 1.5f + 0.5f,
+					age = isHabitable ? new Planet().planetAge() : "N/A"
 				};
 
 				planets.Add(newPlanet);
@@ -134,7 +150,8 @@ namespace spaceGame
 		{
 			float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
 			seconds += dt;
-
+			//currentScreen = Screen.intro; // Ensure currentScreen is initialized
+			
 			KeyboardState keyboardState = Keyboard.GetState();
 
 			if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || keyboardState.IsKeyDown(Keys.Escape))
@@ -179,7 +196,7 @@ namespace spaceGame
 
 							if (panelVisible && selectedPlanet == planets[i])
 							{
-								panelRect = new Rectangle(mouseState.X - panelRect.Width + 150, mouseState.Y - panelRect.Height + 50, 160, 140);
+								panelRect = new Rectangle(mouseState.X - panelRect.Width + 350, mouseState.Y - panelRect.Height + 50, 420, 150);
 							}
 							break;
 						}
@@ -193,7 +210,7 @@ namespace spaceGame
 						{
 							panelVisible = true;
 							selectedPlanet = planets[i]; // Lock onto this specific planet's data!
-							panelRect = new Rectangle(planets[i].Bounds.X + 50, planets[i].Bounds.Y - 30, 160, 140);
+							panelRect = new Rectangle(planets[i].Bounds.X , planets[i].Bounds.Y - 70, 420, 150);
 							break;
 						}
 					}
@@ -214,11 +231,13 @@ namespace spaceGame
 			GraphicsDevice.Clear(Color.Black);
 
 			_spriteBatch.Begin();
-
+			
 			if (currentScreen == Screen.MainScreen)
 			{
 				// Draw title screen instructions here if desired
 				_spriteBatch.Draw(spaceBackground, mainBackgroundRect, Color.White);
+				_spriteBatch.Draw(logo, logoRect, Color.White);
+				_spriteBatch.DrawString(font, "Press Enter to Start", new Vector2(window.Width / 2 - 80, window.Height / 2), Color.White);
 			}
 			else if (currentScreen == Screen.Playing)
 			{
@@ -254,11 +273,22 @@ namespace spaceGame
 
 					// Note: To draw text strings like selectedPlanet.Name or selectedPlanet.Mineral, 
 					// make sure you have a SpriteFont loaded and call _spriteBatch.DrawString() here!
-					_spriteBatch.DrawString(font, selectedPlanet.Name, new Vector2(panelRect.X + 10, panelRect.Y + 10), Color.White);
-					_spriteBatch.DrawString(font, "Type: " + selectedPlanet.Type, new Vector2(panelRect.X + 10, panelRect.Y + 30), Color.White);
-					_spriteBatch.DrawString(font, "Mineral: " + selectedPlanet.Mineral, new Vector2(panelRect.X + 10, panelRect.Y + 50), Color.White);
-					_spriteBatch.DrawString(font, "Species: " + selectedPlanet.Species, new Vector2(panelRect.X + 10, panelRect.Y + 70), Color.White);
-					_spriteBatch.DrawString(font, "Population: " + selectedPlanet.Population.ToString(), new Vector2(panelRect.X + 10, panelRect.Y + 90), Color.White);
+					_spriteBatch.DrawString(font, selectedPlanet.Name, new Vector2(panelRect.X + 140, panelRect.Y + 20), Color.White);
+					_spriteBatch.DrawString(font, "Type: " + selectedPlanet.Type, new Vector2(panelRect.X + 140, panelRect.Y + 50), Color.White);
+					_spriteBatch.DrawString(font, "Mineral: " + selectedPlanet.Mineral, new Vector2(panelRect.X + 140, panelRect.Y + 70), Color.White);
+					_spriteBatch.DrawString(font, "Species: " + selectedPlanet.Species, new Vector2(panelRect.X + 140, panelRect.Y + 90), Color.White);
+					_spriteBatch.DrawString(font, "Population: " + selectedPlanet.Population.ToString(), new Vector2(panelRect.X + 140, panelRect.Y + 110), Color.White);
+					if (selectedPlanet.IsHabitable)
+					{
+						_spriteBatch.DrawString(font, "Tech Level: " + selectedPlanet.TechLevel.ToString(), new Vector2(panelRect.X + 140, panelRect.Y + 150), Color.White);
+						
+						_spriteBatch.DrawString(font, "Age: " + selectedPlanet.age, new Vector2(panelRect.X + 140, panelRect.Y + 130), Color.White);
+					}
+					else
+					{
+						_spriteBatch.DrawString(font, "Tech Level: N/A", new Vector2(panelRect.X + 140, panelRect.Y + 150), Color.White);
+					}
+					
 				}
 			}
 
