@@ -16,8 +16,10 @@ namespace spacePlanets
         private Rectangle _location;
 		private string _name;
 		private SpriteFont _font;
-		private float _rotateion;
-
+		private new Vector2 _origin;
+		
+        private float _rotationAngle = 0f; 
+        private float _rotationSpeed = 2f;  
 
 
         public Planet(Texture2D texture, Rectangle bounds, SpriteFont font, string name)
@@ -26,18 +28,25 @@ namespace spacePlanets
 			_location = bounds;
 			_name = name;
 			_font = font;
+            _origin = new Vector2(_texture.Width/2, _texture.Height/2);
+			
         }
 		public void Update(GameTime gameTime)
 		{
-			_rotateion += (float)gameTime.ElapsedGameTime.TotalSeconds;
+            
+            float elapsed = (float)gameTime.ElapsedGameTime.TotalSeconds;
+            _rotationAngle += _rotationSpeed * elapsed;
+            
+
+            
         }
 
 
         public void Draw(SpriteBatch spriteBatch)
 		{
-			spriteBatch.Draw(_texture, _location,null, Color.White, _rotateion, new Vector2(0,0), SpriteEffects.None, _rotateion);
+			spriteBatch.Draw(_texture, _location,null, Color.White,  _rotationAngle /2 , _origin, SpriteEffects.None, 0f);
 			Vector2 nameSize = _font.MeasureString(_name);
-			Vector2 namePosition = new Vector2(_location.X + (_location.Width - nameSize.X) / 2, _location.Y + _location.Height + 5);
+			Vector2 namePosition = new Vector2(_location.X - 20, _location.Y + _location.Height);
 			spriteBatch.DrawString(_font, _name, namePosition, Color.White);
         }
 

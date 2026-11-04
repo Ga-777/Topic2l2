@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
@@ -25,13 +26,8 @@ namespace spaceGame
 		Rectangle window;
 		Random random;
 		Texture2D spaceBackground;
+
 		
-
-
-		Rectangle introBackgroundRect;
-
-		float introTimer = 0f;
-
 		// MainScreen Elements
 
 		Rectangle mainBackgroundRect;
@@ -40,19 +36,13 @@ namespace spaceGame
 
 		Rectangle logoRect;
 
-		// UI Elements
-		Texture2D UI_Panel;
-		bool panelVisible = false;
-		Rectangle panelRect;
-		Planet selectedPlanet = null; // Track which planet was clicked
+	
 
 		SpriteFont font;
 
 		// Master pool of data for randomization
-		List<string> possibleNames = new List<string> { "Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Kepler-22b", "Gliss-581" };
-		List<string> possibleMinerals = new List<string> { "Iron", "Copper", "Gold", "Platinum", "Uranium", "Titanium", "Silicon", "Water" };
-		List<string> possibleTypes = new List<string> { "Terrestrial", "Gas Giant", "Ice Giant", "Dwarf Planet" };
-		List<string> possibleSpecies = new List<string> { "Humans", "Aliens", "Robots", "Cyborgs", "Mutants", "Insects", "Reptiles", "Birds" };
+		List<string> possibleNames = new List<string> { "Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Kepler-22b", "Gliss-581", "Gav-117", "Endor", "Naboo"};
+
 
 		// Active planets in the game world
 		List<Planet> planets;
@@ -77,7 +67,7 @@ namespace spaceGame
 			window = new Rectangle(0, 0, 800, 600);
 			random = new Random();
 			mainBackgroundRect = new Rectangle(0, 0, window.Width, window.Height);
-			introBackgroundRect = new Rectangle(0, 0, window.Width, window.Height);
+		
 			logoRect = new Rectangle(window.Width / 2 - 250, window.Height / 2 - 400, 500, 500);
 			planets = new List<Planet>();
 			planetTextures = new List<Texture2D>();
@@ -104,7 +94,7 @@ namespace spaceGame
 			}
 
 			logo = Content.Load<Texture2D>("UI/logo");
-			UI_Panel = Content.Load<Texture2D>("UI/UI_Planel");
+			
 
 			spaceThemeEffect = Content.Load<SoundEffect>("Sounds/leberch-space-440026");
 			spaceTheme = spaceThemeEffect.CreateInstance();
@@ -124,7 +114,7 @@ namespace spaceGame
 				int x = random.Next(0, window.Width - size);
 				int y = random.Next(0, window.Height - size);
 
-				bool isHabitable = random.Next(0, 2) == 1; // 50% chance to be habitable
+				
 
 				
 				
@@ -133,50 +123,54 @@ namespace spaceGame
 			}
 		}
 
-		protected override void Update(GameTime gameTime)
-		{
-			float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
-			seconds += dt;
-			//currentScreen = Screen.intro; // Ensure currentScreen is initialized
-			
+        protected override void Update(GameTime gameTime)
+        {
+            float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+            seconds += dt;
 
-			KeyboardState keyboardState = Keyboard.GetState();
+            KeyboardState keyboardState = Keyboard.GetState();
+            mouseState = Mouse.GetState();
 
-			if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || keyboardState.IsKeyDown(Keys.Escape))
-				Exit();
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || keyboardState.IsKeyDown(Keys.Escape))
+                Exit();
 
-			// Screen Switching Logic
-			if (currentScreen == Screen.MainScreen)
-			{
-			    
-				if (keyboardState.IsKeyDown(Keys.Enter))
-				{
-					currentScreen = Screen.Playing;
-				}
-			}
-			else if (currentScreen == Screen.Playing)
-			{
-				// Update planet rotations
-				
-				// Handle Spacebar spawning new planets
-				if (keyboardState.IsKeyDown(Keys.Space) && seconds >= respawnTime)
-				{
-					SpawnPlanets(1);
-					seconds = 0f;
-				}
+            // Screen Switching Logic
+            if (currentScreen == Screen.MainScreen)
+            {
+                if (keyboardState.IsKeyDown(Keys.Enter))
+                {
+                    currentScreen = Screen.Playing;
+                }
+            }
+            else if (currentScreen == Screen.Playing)
+            {
+                // Update planet rotations
+                if (keyboardState.IsKeyDown(Keys.Space) && seconds >= respawnTime)
+                {
+                    SpawnPlanets(1);
+                    seconds = 0f;
+                }
 
-				// Mouse Dragging & UI Interaction
-				
+                // Check if the right mouse button is pressed and if the mouse position intersects with any planet
+                if (mouseState.RightButton == ButtonState.Pressed)
+                {
+                    planets.Remove(planets[0]);
+                }
 
-				// Manage Audio state
-				if (spaceTheme.State != SoundState.Playing)
-				{
-					spaceTheme.Play();
-				}
-			}
+                // Manage Audio state
+                if (spaceTheme.State != SoundState.Playing)
+                {
+                    spaceTheme.Play();
+                }
+            }
 
-			base.Update(gameTime);
-		}
+            foreach (Planet planet in planets)
+            {
+                planet.Update(gameTime);
+            }
+
+            base.Update(gameTime);
+        }
 
 		protected override void Draw(GameTime gameTime)
 		{
