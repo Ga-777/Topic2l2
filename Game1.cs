@@ -104,6 +104,7 @@ namespace spaceGame
 
 			// Spawn initial unique planets
 			SpawnPlanets(7);
+			
 		}
 
 		private void SpawnPlanets(int count)
@@ -120,8 +121,12 @@ namespace spaceGame
 				
 					
 				planets.Add(new Planet(planetTextures[random.Next(planetTextures.Count)], new Rectangle(x, y, size, size), font, possibleNames[random.Next(possibleNames.Count)]));
+				
 			}
 		}
+		
+
+        
 
         protected override void Update(GameTime gameTime)
         {
@@ -151,17 +156,25 @@ namespace spaceGame
                     seconds = 0f;
                 }
 
-                // Check if the right mouse button is pressed and if the mouse position intersects with any planet
-                if (mouseState.RightButton == ButtonState.Pressed)
-                {
-                    planets.Remove(planets[0]);
-                }
-
-                // Manage Audio state
                 if (spaceTheme.State != SoundState.Playing)
                 {
                     spaceTheme.Play();
                 }
+            }
+			if (mouseState.RightButton == ButtonState.Pressed)
+			{
+
+                for (int i = planets.Count - 1; i >= 0; i--)
+                {
+                    if (planets[i]._location.Contains(mouseState.Position))
+                    {
+                        planets.RemoveAt(i);
+						planetTextures.RemoveAt(i);
+						--i;
+                    }
+                }
+             
+
             }
 
             foreach (Planet planet in planets)
@@ -169,7 +182,8 @@ namespace spaceGame
                 planet.Update(gameTime);
             }
 
-            base.Update(gameTime);
+			base.Update(gameTime);
+            
         }
 
 		protected override void Draw(GameTime gameTime)
