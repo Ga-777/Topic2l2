@@ -36,9 +36,9 @@ namespace spaceGame
 
 		Rectangle logoRect;
 
-	
+        Rectangle logoRect2;
 
-		SpriteFont font;
+        SpriteFont font, mainScreenFont;
 
 		// Master pool of data for randomization
 		List<string> possibleNames = new List<string> { "Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Kepler-22b", "Gliss-581", "Gav-117", "Endor", "Naboo"};
@@ -54,6 +54,9 @@ namespace spaceGame
 
 		SoundEffect spaceThemeEffect;
 		SoundEffectInstance spaceTheme;
+
+		string scoreMade, scoreGone;
+		int scoreMadeHolder, scoreGoneHolder;
 
 		public Game1()
 		{
@@ -102,6 +105,7 @@ namespace spaceGame
 			// font
 			font = Content.Load<SpriteFont>("Font/maintext");
 
+			mainScreenFont = Content.Load<SpriteFont>("Font/MainScreen");
 			// Spawn initial unique planets
 			SpawnPlanets(7);
 			
@@ -120,8 +124,8 @@ namespace spaceGame
 				
 				
 					
-				planets.Add(new Planet(planetTextures[random.Next(planetTextures.Count)], new Rectangle(x, y, size, size), font, possibleNames[random.Next(possibleNames.Count)]));
-				
+				planets.Add(new Planet(planetTextures[random.Next(planetTextures.Count)], new Rectangle(x, y, size, size), font, possibleNames[random.Next(possibleNames.Count)])); //E
+				scoreMadeHolder++;
 			}
 		}
 		
@@ -169,14 +173,16 @@ namespace spaceGame
                     if (planets[i]._location.Contains(mouseState.Position))
                     {
                         planets.RemoveAt(i);
-						planetTextures.RemoveAt(i);
+						planetTextures.RemoveAt(i); //E
 						--i;
+						scoreGoneHolder++;
                     }
                 }
              
 
             }
-
+			scoreMade = scoreMadeHolder.ToString();
+			scoreGone = scoreGoneHolder.ToString();
             foreach (Planet planet in planets)
             {
                 planet.Update(gameTime);
@@ -197,7 +203,9 @@ namespace spaceGame
 				// Draw title screen instructions here if desired
 				_spriteBatch.Draw(spaceBackground, mainBackgroundRect, Color.White);
 				_spriteBatch.Draw(logo, logoRect, Color.White);
-				_spriteBatch.DrawString(font, "Press Enter to Start", new Vector2(window.Width / 2 - 80, window.Height / 2), Color.White);
+				_spriteBatch.Draw(logo, logoRect2, Color.Ivory);
+				_spriteBatch.DrawString(mainScreenFont, "Press Enter to Start", new Vector2(window.Width / 2 - 150, window.Height / 2), Color.White);
+				_spriteBatch.DrawString(font, "By Gavin, Anderson", new Vector2( 630, 570), Color.White);
 			}
 			else if (currentScreen == Screen.Playing)
 			{
@@ -208,11 +216,12 @@ namespace spaceGame
 				{
 					planet.Draw(_spriteBatch);
 				}
+				_spriteBatch.DrawString(font, "Planets Removed: " + scoreGone, new Vector2(500, 10), Color.White);
+                _spriteBatch.DrawString(font, "Planets made: " + scoreMade, new Vector2(200, 10), Color.White);
 
 
 
-				
-			}
+            }
 
 			_spriteBatch.End();
 
