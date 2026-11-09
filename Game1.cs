@@ -13,7 +13,9 @@ namespace spaceGame
 	{
 	   
 		MainScreen,
-		Playing
+		Playing,
+		goodEnding,
+		badEnding
 	}
 
 	public class Game1 : Game
@@ -58,6 +60,10 @@ namespace spaceGame
 		string scoreMade, scoreGone;
 		int scoreMadeHolder, scoreGoneHolder;
 
+		Texture2D badImage, goodImage;
+
+	
+
 		public Game1()
 		{
 			_graphics = new GraphicsDeviceManager(this);
@@ -74,6 +80,8 @@ namespace spaceGame
 			logoRect = new Rectangle(window.Width / 2 - 250, window.Height / 2 - 400, 500, 500);
 			planets = new List<Planet>();
 			planetTextures = new List<Texture2D>();
+
+			
 
 			_graphics.PreferredBackBufferWidth = window.Width;
 			_graphics.PreferredBackBufferHeight = window.Height;
@@ -96,10 +104,12 @@ namespace spaceGame
 				planetTextures.Add(Content.Load<Texture2D>($"Images/16-bit-planet{i}"));
 			}
 
-			logo = Content.Load<Texture2D>("UI/logo");
+			logo = Content.Load<Texture2D>("UI/logo2");
+
 			
 
-			spaceThemeEffect = Content.Load<SoundEffect>("Sounds/leberch-space-440026");
+
+            spaceThemeEffect = Content.Load<SoundEffect>("Sounds/leberch-space-440026");
 			spaceTheme = spaceThemeEffect.CreateInstance();
 
 			// font
@@ -123,9 +133,10 @@ namespace spaceGame
 
 				
 				
-					
+				
 				planets.Add(new Planet(planetTextures[random.Next(planetTextures.Count)], new Rectangle(x, y, size, size), font, possibleNames[random.Next(possibleNames.Count)])); //E
 				scoreMadeHolder++;
+				
 			}
 		}
 		
@@ -143,51 +154,77 @@ namespace spaceGame
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || keyboardState.IsKeyDown(Keys.Escape))
                 Exit();
 
-            // Screen Switching Logic
-            if (currentScreen == Screen.MainScreen)
-            {
-                if (keyboardState.IsKeyDown(Keys.Enter))
-                {
-                    currentScreen = Screen.Playing;
-                }
-            }
-            else if (currentScreen == Screen.Playing)
-            {
-                // Update planet rotations
-                if (keyboardState.IsKeyDown(Keys.Space) && seconds >= respawnTime)
-                {
-                    SpawnPlanets(1);
-                    seconds = 0f;
-                }
+			if (scoreMadeHolder >= 50)
+			{
+				currentScreen = Screen.goodEnding;
+			}
+			if (scoreGoneHolder >= 50)
+			{
+				currentScreen = Screen.badEnding;
+			}
 
-                if (spaceTheme.State != SoundState.Playing)
-                {
-                    spaceTheme.Play();
-                }
-            }
+			// Screen Switching Logic
+			if (currentScreen == Screen.MainScreen)
+			{
+				if (keyboardState.IsKeyDown(Keys.Enter))
+				{
+					currentScreen = Screen.Playing;
+				}
+			}
+			else if (currentScreen == Screen.Playing)
+			{
+				// Update planet rotations
+				if (keyboardState.IsKeyDown(Keys.Space) && seconds >= respawnTime)
+				{
+					SpawnPlanets(1);
+					seconds = 0f;
+				}
+
+				if (spaceTheme.State != SoundState.Playing)
+				{
+					spaceTheme.Play();
+				}
+			}
+			else if (currentScreen == Screen.goodEnding)
+			{
+
+
+
+
+
+			}
+			else if (currentScreen == Screen.badEnding)
+			{
+
+
+
+
+			}
 			if (mouseState.RightButton == ButtonState.Pressed)
 			{
 
-                for (int i = planets.Count - 1; i >= 0; i--)
-                {
-                    if (planets[i]._location.Contains(mouseState.Position))
-                    {
-                        planets.RemoveAt(i);
-						planetTextures.RemoveAt(i); //E
+				for (int i = planets.Count - 1; i >= 0; i--)
+				{
+					if (planets[i]._location.Contains(mouseState.Position))
+					{
+						planets.RemoveAt(i);
+
 						--i;
 						scoreGoneHolder++;
-                    }
-                }
-             
+					}
+				}
 
-            }
-			scoreMade = scoreMadeHolder.ToString();
+
+			}
+            
+            scoreMade = scoreMadeHolder.ToString();
 			scoreGone = scoreGoneHolder.ToString();
             foreach (Planet planet in planets)
             {
                 planet.Update(gameTime);
             }
-
+			
+           
 			base.Update(gameTime);
             
         }
@@ -218,12 +255,21 @@ namespace spaceGame
 				}
 				_spriteBatch.DrawString(font, "Planets Removed: " + scoreGone, new Vector2(500, 10), Color.White);
                 _spriteBatch.DrawString(font, "Planets made: " + scoreMade, new Vector2(200, 10), Color.White);
-
+				
+				
 
 
             }
+			else if (currentScreen == Screen.goodEnding)
+			{
 
-			_spriteBatch.End();
+			}
+			else if (currentScreen == Screen.badEnding)
+			{
+
+			}
+
+				_spriteBatch.End();
 
 			base.Draw(gameTime);
 		}
