@@ -62,6 +62,8 @@ namespace spaceGame
 
 		Texture2D badImage, goodImage;
 
+		Rectangle badRect, goodRect;
+
 	
 
 		public Game1()
@@ -81,14 +83,18 @@ namespace spaceGame
 			planets = new List<Planet>();
 			planetTextures = new List<Texture2D>();
 
-			
+			badRect = new Rectangle(window.Width / 2 - 250, window.Height / 2 - 220, 500, 500);
+			goodRect = new Rectangle(window.Width / 2 - 250, window.Height / 2 - 220, 500, 500);
+
+
+
 
 			_graphics.PreferredBackBufferWidth = window.Width;
 			_graphics.PreferredBackBufferHeight = window.Height;
 			_graphics.ApplyChanges();
 
 			seconds = 0f;
-			respawnTime = 3f;
+			respawnTime = 1.5f;
 
 			base.Initialize();
 		}
@@ -117,6 +123,9 @@ namespace spaceGame
 
 			mainScreenFont = Content.Load<SpriteFont>("Font/MainScreen");
 			// Spawn initial unique planets
+
+			goodImage = Content.Load<Texture2D>("Images/good");
+			badImage = Content.Load<Texture2D>("Images/bad (2)");
 			SpawnPlanets(7);
 			
 		}
@@ -158,7 +167,7 @@ namespace spaceGame
 			{
 				currentScreen = Screen.goodEnding;
 			}
-			if (scoreGoneHolder >= 50)
+			if (scoreGoneHolder >= 40)
 			{
 				currentScreen = Screen.badEnding;
 			}
@@ -187,7 +196,13 @@ namespace spaceGame
 			}
 			else if (currentScreen == Screen.goodEnding)
 			{
-
+				if (keyboardState.IsKeyDown(Keys.B))
+				{
+					currentScreen = Screen.MainScreen;
+					scoreMadeHolder = 0;
+					scoreGoneHolder = 0;
+					planets.Clear();
+				}
 
 
 
@@ -195,7 +210,13 @@ namespace spaceGame
 			}
 			else if (currentScreen == Screen.badEnding)
 			{
-
+				if (keyboardState.IsKeyDown(Keys.B))
+				{
+					currentScreen = Screen.MainScreen;
+					scoreMadeHolder = 0;
+					scoreGoneHolder = 0;
+					planets.Clear();
+				}
 
 
 
@@ -262,11 +283,17 @@ namespace spaceGame
             }
 			else if (currentScreen == Screen.goodEnding)
 			{
-
+			_spriteBatch.Draw(goodImage, goodRect, Color.White);
+			_spriteBatch.DrawString(mainScreenFont, "Maker of worlds (Build 50 worlds)", new Vector2(180, 10), Color.White);
+				_spriteBatch.DrawString(font, "(Good Ending)", new Vector2(180, 50), Color.White);
+				_spriteBatch.DrawString(font, "Press B to return to main menu", new Vector2(0, 580), Color.White);
 			}
 			else if (currentScreen == Screen.badEnding)
 			{
-
+			_spriteBatch.Draw(badImage, badRect, Color.White);
+			_spriteBatch.DrawString(mainScreenFont, "Destroyer of worlds (Destroyed 40 worlds)", new Vector2(90, 10), Color.White);
+			_spriteBatch.DrawString(font, "(Bad Ending)", new Vector2(90, 50), Color.White);
+			_spriteBatch.DrawString(font, "Press B to return to main menu", new Vector2(0, 580), Color.White);
 			}
 
 				_spriteBatch.End();
